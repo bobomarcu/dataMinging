@@ -55,7 +55,7 @@ def tune_models(X_train, y_train):
     print("\n--- Tuning Logistic Regression ---")
     lr_params = {
         'C': [0.1, 1, 10],
-        'solver': ['lbfgs'] # lbfgs e standard, saga e mai bun pt seturi gigant
+        'solver': ['lbfgs']
     }
     lr = LogisticRegression(max_iter=1000, random_state=42, n_jobs=-1, class_weight='balanced')
     lr_grid = GridSearchCV(lr, lr_params, cv=3, scoring='recall_macro', n_jobs=-1, verbose=1)

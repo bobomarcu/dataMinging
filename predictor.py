@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
+import os
 from sklearn.metrics import recall_score, accuracy_score
+from visualizations import plot_prediction_scatter
 
 def predict_new_data(models_results, X_pred, y_pred, feature_scaler, label_encoder, numerical_cols, save_path="predictions.csv"):
     """
@@ -50,6 +52,23 @@ def predict_new_data(models_results, X_pred, y_pred, feature_scaler, label_encod
     # 4. Salvare
     df_results.to_csv(save_path, index=False)
     print(f"Rezultatele predictiei au fost salvate in: {save_path}")
+    
+    # 5. Generare Scatter Plot Comparativ (Actual vs Predicted)
+    if os.path.exists(save_path):
+        print(f"Citire date din {save_path} pentru generarea Scatter Plot Comparativ...")
+        df_loaded = pd.read_csv(save_path)
+        
+        # Identificam coloanele de features
+        metadata_cols = ['Actual_State', 'Predicted_State', 'Correct_Prediction']
+        feature_cols = [c for c in df_loaded.columns if c not in metadata_cols]
+        
+        X_plot = df_loaded[feature_cols]
+        y_actual_plot = df_loaded['Actual_State']
+        y_predicted_plot = df_loaded['Predicted_State']
+        
+        # Apelam noua functie care deseneaza ambele grafice
+        plot_prediction_scatter(X_plot, y_actual_plot, y_predicted_plot)
+
     
     # Afisam cateva exemple de erori critice
     critical_errors = df_results[

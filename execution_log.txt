@@ -108,8 +108,9 @@ weighted avg       0.87      0.87      0.87     20000
 
 Generare grafice...
 Matricea de confuzie salvata in: output_images/confusion_matrices.png
-Feature importance pentru RandomForest salvat in: output_images/feature_importance_RandomForest.png
-Feature importance pentru GradientBoosting salvat in: output_images/feature_importance_GradientBoosting.png
+Grafic salvat pentru RandomForest in: output_images/feature_importance_RandomForest.png
+Grafic salvat pentru GradientBoosting in: output_images/feature_importance_GradientBoosting.png
+Grafic salvat pentru LogisticRegression in: output_images/feature_importance_LogisticRegression.png
 Grafice generate.
 
 ==================== Predictie pe Date Noi (Simulare Productie) ====================
@@ -119,5 +120,8 @@ Model: LogisticRegression - Recall Macro pe setul de predictie: 0.9361
 
 >>> Modelul castigator selectat: LogisticRegression (Recall: 0.9361)
 Rezultatele predictiei au fost salvate in: predictions.csv
+Citire date din predictions.csv pentru generarea Scatter Plot Comparativ...
+Se calculeaza PCA (2 componente) pe datele din CSV...
+Graficul Comparativ (Actual vs Predicted) salvat in: output_images/prediction_scatter_comparison.png
 
 Excelent! Nicio eroare critica detectata pe setul de predictie.
