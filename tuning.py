@@ -4,14 +4,8 @@ from sklearn.linear_model import LogisticRegression
 import pandas as pd
 
 def tune_models(X_train, y_train):
-    """
-    Realizeaza Grid Search pentru a gasi cei mai buni hiperparametri.
-    Pentru viteza, se poate folosi un subset de date (ex: primele 20.000 randuri).
-    """
     print(f"\n{'='*20} Start Tuning Hiperparametri (Grid Search) {'='*20}")
     
-    # Folosim un subset pentru tuning daca setul e foarte mare (>50k), pentru a nu dura ore.
-    # Putem comenta liniile urmatoare daca vrem sa folosim tot setul (mai lent, dar mai precis).
     SAMPLE_SIZE = 30000
     if len(X_train) > SAMPLE_SIZE:
         print(f"Dataset mare ({len(X_train)}). Se utilizeaza un subset de {SAMPLE_SIZE} pentru tuning rapid...")
@@ -37,9 +31,6 @@ def tune_models(X_train, y_train):
     best_models['RandomForest'] = rf_grid.best_estimator_
 
     # 2. Gradient Boosting Tuning
-    # Gradient Boosting nu suporta direct 'class_weight'. Optiuni alternative ar fi:
-    # - Over/undersampling pe X_train/y_train inainte de a apela 'tune_models'.
-    # - Folosind librarii ca XGBoost/LightGBM care au parametru 'scale_pos_weight'.
     print("\n--- Tuning Gradient Boosting ---")
     gb_params = {
         'n_estimators': [100, 500],

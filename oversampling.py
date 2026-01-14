@@ -2,10 +2,6 @@ from imblearn.over_sampling import SMOTE
 import pandas as pd
 
 def apply_smote(X_train, y_train):
-    """
-    Aplica SMOTE (Synthetic Minority Over-sampling Technique) pe setul de antrenament
-    pentru a gestiona dezechilibrul claselor.
-    """
     print(f"\n{'='*20} Aplicare SMOTE pe setul de antrenament {'='*20}")
     
     print("Distributia initiala a claselor in Training:")

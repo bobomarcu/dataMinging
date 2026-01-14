@@ -11,7 +11,7 @@ def split_dataset(X, y, train_ratio=0.6, test_ratio=0.1, pred_ratio=0.3, random_
         X, y, 
         test_size=temp_size, 
         random_state=random_state, 
-        stratify=y  # Pastram distributia claselor
+        stratify=y
     )
 
     test_size_relative = test_ratio / temp_size

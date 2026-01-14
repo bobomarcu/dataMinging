@@ -11,10 +11,6 @@ def ensure_output_dir(directory="output_images"):
         os.makedirs(directory)
 
 def plot_confusion_matrices(models_results, y_test, class_names, save_dir="output_images"):
-    """
-    Genereaza matricea de confuzie pentru fiecare model.
-    Salveaza graficul ca imagine PNG.
-    """
     ensure_output_dir(save_dir)
     n_models = len(models_results)
     fig, axes = plt.subplots(1, n_models, figsize=(6 * n_models, 5))
@@ -37,21 +33,16 @@ def plot_confusion_matrices(models_results, y_test, class_names, save_dir="outpu
     plt.close()
 
 def plot_feature_importance(models_results, feature_names, save_dir="output_images"):
-    """
-    Afiseaza top 10 feature-uri importante.
-    """
     ensure_output_dir(save_dir)
     
     for name, (model, _) in models_results.items():
         importances = None
         metric_name = "Importance"
         
-        # 1. Verificam pentru modele bazate pe arbori
         if hasattr(model, 'feature_importances_'):
             importances = model.feature_importances_
             metric_name = "Feature Importance"
             
-        # 2. Verificam pentru modele liniare (Logistic Regression)
         elif hasattr(model, 'coef_'):
             importances = np.mean(np.abs(model.coef_), axis=0)
             metric_name = "Mean Abs Coefficient"
@@ -73,34 +64,21 @@ def plot_feature_importance(models_results, feature_names, save_dir="output_imag
             print(f"Modelul {name} nu suporta vizualizarea importantei feature-urilor.")
 
 def plot_prediction_scatter(X, y_actual, y_pred, save_dir="output_images"):
-    """
-    Realizeaza PCA pentru a reduce datele la 2 dimensiuni si genereaza doua Scatter Plot-uri alaturate:
-    1. Actual State (Ground Truth)
-    2. Predicted State (Model Output)
-    
-    Aceasta permite vizualizarea directa a performantei si a outlier-ilor.
-    """
     ensure_output_dir(save_dir)
     
-    # Reducere dimensionalitate cu PCA
     print("Se calculeaza PCA (2 componente) pe datele din CSV...")
     
-    # Ne asiguram ca X este numeric
     X_numeric = X.select_dtypes(include=[np.number])
     
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(X_numeric)
     
-    # Configurare plot Side-by-Side
     fig, axes = plt.subplots(1, 2, figsize=(20, 8))
     
-    # Unificam paleta de culori pentru consistenta intre cele doua grafice
-    # Trebuie sa luam toate clasele unice care apar atat in actual cat si in predicted
     all_classes = np.unique(np.concatenate([y_actual, y_pred]))
     colors = sns.color_palette("husl", len(all_classes))
     color_map = dict(zip(all_classes, colors))
     
-    # Functie helper pentru plotare
     def draw_scatter(ax, y_data, title):
         for class_label in all_classes:
             mask = y_data == class_label
@@ -121,10 +99,8 @@ def plot_prediction_scatter(X, y_actual, y_pred, save_dir="output_images"):
         ax.legend(title='State', loc='best')
         ax.grid(True, linestyle='--', alpha=0.3)
 
-    # Plot 1: Actual
     draw_scatter(axes[0], y_actual, "ACTUAL State (Ground Truth)")
     
-    # Plot 2: Predicted
     draw_scatter(axes[1], y_pred, "PREDICTED State (Model Output)")
     
     plt.tight_layout()
