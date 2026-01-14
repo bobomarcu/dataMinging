@@ -1,0 +1,123 @@
+Incarcare date din dataset/distributed_system_architecture_stress_dataset.csv...
+Coloana 'p95_latency_ms' eliminata pentru a creste realismul predictiilor.
+Coloana 'circuit_breaker_open' eliminata pentru a creste realismul predictiilor.
+Coloana 'retry_storm_detected' eliminata pentru a creste realismul predictiilor.
+Clase target mapate: {'cascading_failure': np.int64(0), 'degraded': np.int64(1), 'healthy': np.int64(2), 'total_outage': np.int64(3)}
+Preprocesare finalizata cu succes.
+   num_services  ...  root_cause_service_dependency_failure
+0     -1.252006  ...                                  False
+1     -1.035564  ...                                  False
+2      1.074750  ...                                  False
+3     -0.981453  ...                                  False
+4      0.695976  ...                                  False
+
+[5 rows x 25 columns]
+------------------------------
+Split Distributie:
+Training:   120000 (60%)
+Testing:    20000 (10%)
+Prediction: 60000 (30%)
+------------------------------
+
+Dupa splitare:
+X_train shape: (120000, 25), y_train shape: (120000,)
+X_test shape: (20000, 25), y_test shape: (20000,)
+X_pred shape: (60000, 25), y_pred shape: (60000,)
+
+==================== Aplicare SMOTE pe setul de antrenament ====================
+Distributia initiala a claselor in Training:
+system_state
+1    62081
+2    57167
+0      734
+3       18
+Name: count, dtype: int64
+Distributia claselor dupa SMOTE:
+system_state
+1    62081
+2    62081
+0    62081
+3    62081
+Name: count, dtype: int64
+Se executa optimizarea hiperparametrilor...
+
+==================== Start Tuning Hiperparametri (Grid Search) ====================
+Dataset mare (248324). Se utilizeaza un subset de 30000 pentru tuning rapid...
+
+--- Tuning Random Forest ---
+Fitting 3 folds for each of 18 candidates, totalling 54 fits
+Cei mai buni parametri RF: {'max_depth': 20, 'min_samples_split': 5, 'n_estimators': 50}
+
+--- Tuning Gradient Boosting ---
+Fitting 3 folds for each of 6 candidates, totalling 18 fits
+Cei mai buni parametri GB: {'learning_rate': 0.05, 'n_estimators': 100}
+
+--- Tuning Logistic Regression ---
+Fitting 3 folds for each of 3 candidates, totalling 9 fits
+Cei mai buni parametri LR: {'C': 0.1, 'solver': 'lbfgs'}
+
+Evaluare modele optimizate pe setul de Test:
+
+==================== Antrenare RandomForest ====================
+Acuratete RandomForest: 0.8719
+
+Raport de Clasificare:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00       122
+           1       0.88      0.87      0.88     10347
+           2       0.86      0.87      0.87      9528
+           3       1.00      0.67      0.80         3
+
+    accuracy                           0.87     20000
+   macro avg       0.94      0.85      0.89     20000
+weighted avg       0.87      0.87      0.87     20000
+
+
+==================== Antrenare GradientBoosting ====================
+Acuratete GradientBoosting: 0.8749
+
+Raport de Clasificare:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00       122
+           1       0.88      0.87      0.88     10347
+           2       0.86      0.88      0.87      9528
+           3       1.00      1.00      1.00         3
+
+    accuracy                           0.87     20000
+   macro avg       0.94      0.94      0.94     20000
+weighted avg       0.88      0.87      0.87     20000
+
+
+==================== Antrenare LogisticRegression ====================
+Acuratete LogisticRegression: 0.8722
+
+Raport de Clasificare:
+              precision    recall  f1-score   support
+
+           0       0.98      1.00      0.99       122
+           1       0.89      0.86      0.87     10347
+           2       0.85      0.89      0.87      9528
+           3       0.22      0.67      0.33         3
+
+    accuracy                           0.87     20000
+   macro avg       0.74      0.85      0.77     20000
+weighted avg       0.87      0.87      0.87     20000
+
+
+Generare grafice...
+Matricea de confuzie salvata in: output_images/confusion_matrices.png
+Feature importance pentru RandomForest salvat in: output_images/feature_importance_RandomForest.png
+Feature importance pentru GradientBoosting salvat in: output_images/feature_importance_GradientBoosting.png
+Grafice generate.
+
+==================== Predictie pe Date Noi (Simulare Productie) ====================
+Model: RandomForest - Recall Macro pe setul de predictie: 0.8533
+Model: GradientBoosting - Recall Macro pe setul de predictie: 0.9102
+Model: LogisticRegression - Recall Macro pe setul de predictie: 0.9361
+
+>>> Modelul castigator selectat: LogisticRegression (Recall: 0.9361)
+Rezultatele predictiei au fost salvate in: predictions.csv
+
+Excelent! Nicio eroare critica detectata pe setul de predictie.

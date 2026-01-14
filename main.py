@@ -6,6 +6,7 @@ from models import run_models, train_and_evaluate_model
 from visualizations import plot_confusion_matrices, plot_feature_importance
 from tuning import tune_models
 from oversampling import apply_smote
+from predictor import predict_new_data
 
 def load_and_preprocess_data(file_path):
     """
@@ -66,51 +67,81 @@ def load_and_preprocess_data(file_path):
     y = df[target_col]
 
     print("Preprocesare finalizata cu succes.")
-    return X, y, scaler, le
+    return X, y, scaler, le, numerical_cols
+
+import sys
+
+# ... imports ramase ...
 
 if __name__ == "__main__":
-    file_path = 'dataset/distributed_system_architecture_stress_dataset.csv'
-    X, y, scaler, le = load_and_preprocess_data(file_path)
-    
-    if X is not None:
-        print(X.head())
+    # Redirectam output-ul catre un fisier, dar pastram si consola
+    class Tee(object):
+        def __init__(self, *files):
+            self.files = files
+        def write(self, obj):
+            for f in self.files:
+                f.write(obj)
+                f.flush() # Ensure immediate write
+        def flush(self):
+            for f in self.files:
+                f.flush()
 
-        # Utilizam functia de splitare a datelor
-        X_train, X_test, X_pred, y_train, y_test, y_pred = split_dataset(X, y)
+    f = open('execution_log.txt', 'w')
+    original_stdout = sys.stdout
+    sys.stdout = Tee(sys.stdout, f)
+
+    try:
+        file_path = 'dataset/distributed_system_architecture_stress_dataset.csv'
+        # ... restul codului din main ...
+        X, y, scaler, le, numerical_cols = load_and_preprocess_data(file_path)
         
-        print("\nDupa splitare:")
-        print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
-        print(f"X_test shape: {X_test.shape}, y_test shape: {y_test.shape}")
-        print(f"X_pred shape: {X_pred.shape}, y_pred shape: {y_pred.shape}")
+        if X is not None:
+            # ... (tot codul existent) ...
+            print(X.head())
 
-        # Aplicam SMOTE pentru a echilibra setul de antrenament
-        X_train_res, y_train_res = apply_smote(X_train, y_train)
-
-        # Opțiune: Tuning sau Rulare standard?
-        # Pentru demo, activam tuning-ul.
-        PERFORM_TUNING = True
-
-        models_results = {}
-
-        if PERFORM_TUNING:
-            print("Se executa optimizarea hiperparametrilor...")
-            # Tuning se face pe setul de training echilibrat cu SMOTE
-            best_estimators = tune_models(X_train_res, y_train_res) 
+            # Utilizam functia de splitare a datelor
+            X_train, X_test, X_pred, y_train, y_test, y_pred = split_dataset(X, y)
             
-            # Re-antrenam (daca e cazul) sau doar evaluam modelele gasite pe tot setul de test
-            print("\nEvaluare modele optimizate pe setul de Test:")
-            for name, model in best_estimators.items():
-                # Nota: GridSearchCV returneaza modelul deja antrenat pe setul de tuning (subset).
-                # Ideal este sa il re-antrenam pe tot X_train_res inainte de testare finala.
-                model_result = train_and_evaluate_model(model, X_train_res, y_train_res, X_test, y_test, name)
-                models_results[name] = model_result
-        else:
-            # Rulare cu parametri default pe setul de training echilibrat cu SMOTE
-            models_results = run_models(X_train_res, y_train_res, X_test, y_test)
+            print("\nDupa splitare:")
+            print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
+            print(f"X_test shape: {X_test.shape}, y_test shape: {y_test.shape}")
+            print(f"X_pred shape: {X_pred.shape}, y_pred shape: {y_pred.shape}")
 
-        # Vizualizari
-        print("\nGenerare grafice...")
-        class_names = le.classes_ # Obtinem numele reale ale claselor (Healthy, etc.)
-        plot_confusion_matrices(models_results, y_test, class_names)
-        plot_feature_importance(models_results, X.columns)
-        print("Grafice generate.")
+            # Aplicam SMOTE pentru a echilibra setul de antrenament
+            X_train_res, y_train_res = apply_smote(X_train, y_train)
+
+            # Opțiune: Tuning sau Rulare standard?
+            # Pentru demo, activam tuning-ul.
+            PERFORM_TUNING = True
+
+            models_results = {}
+
+            if PERFORM_TUNING:
+                print("Se executa optimizarea hiperparametrilor...")
+                # Tuning se face pe setul de training echilibrat cu SMOTE
+                best_estimators = tune_models(X_train_res, y_train_res) 
+                
+                # Re-antrenam (daca e cazul) sau doar evaluam modelele gasite pe tot setul de test
+                print("\nEvaluare modele optimizate pe setul de Test:")
+                for name, model in best_estimators.items():
+                    # Nota: GridSearchCV returneaza modelul deja antrenat pe setul de tuning (subset).
+                    # Ideal este sa il re-antrenam pe tot X_train_res inainte de testare finala.
+                    model_result = train_and_evaluate_model(model, X_train_res, y_train_res, X_test, y_test, name)
+                    models_results[name] = model_result
+            else:
+                # Rulare cu parametri default pe setul de training echilibrat cu SMOTE
+                models_results = run_models(X_train_res, y_train_res, X_test, y_test)
+
+            # Vizualizari
+            print("\nGenerare grafice...")
+            class_names = le.classes_ # Obtinem numele reale ale claselor (Healthy, etc.)
+            plot_confusion_matrices(models_results, y_test, class_names)
+            plot_feature_importance(models_results, X.columns)
+            print("Grafice generate.")
+
+            # Predicție finală și Export
+            predict_new_data(models_results, X_pred, y_pred, scaler, le, numerical_cols)
+
+    finally:
+        sys.stdout = original_stdout
+        f.close()

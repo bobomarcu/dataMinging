@@ -3,15 +3,18 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
+import os
 
-def plot_confusion_matrices(models_results, y_test, class_names):
+def ensure_output_dir(directory="output_images"):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+def plot_confusion_matrices(models_results, y_test, class_names, save_dir="output_images"):
     """
     Genereaza matricea de confuzie pentru fiecare model din dictionarul models_results.
-    
-    models_results: dict {nume_model: (model_instanta, y_pred)}
-    y_test: valorile reale
-    class_names: lista cu numele claselor (ex: ['Healthy', 'Stressed', 'Failed'])
+    Salveaza graficul ca imagine PNG.
     """
+    ensure_output_dir(save_dir)
     n_models = len(models_results)
     fig, axes = plt.subplots(1, n_models, figsize=(6 * n_models, 5))
     
@@ -27,14 +30,18 @@ def plot_confusion_matrices(models_results, y_test, class_names):
         ax.set_ylabel('Actual')
 
     plt.tight_layout()
-    plt.show()
+    filename = os.path.join(save_dir, "confusion_matrices.png")
+    plt.savefig(filename)
+    print(f"Matricea de confuzie salvata in: {filename}")
+    plt.close() # Inchidem figura pentru a elibera memoria
 
-def plot_feature_importance(models_results, feature_names):
+def plot_feature_importance(models_results, feature_names, save_dir="output_images"):
     """
-    Afiseaza top 10 cele mai importante feature-uri pentru modelele bazate pe arbori (Random Forest, Gradient Boosting).
+    Afiseaza top 10 cele mai importante feature-uri pentru modelele bazate pe arbori.
+    Salveaza graficele ca imagini PNG.
     """
+    ensure_output_dir(save_dir)
     for name, (model, _) in models_results.items():
-        # Verificam daca modelul are atributul feature_importances_
         if hasattr(model, 'feature_importances_'):
             plt.figure(figsize=(10, 6))
             importances = model.feature_importances_
@@ -44,4 +51,8 @@ def plot_feature_importance(models_results, feature_names):
             plt.bar(range(len(indices)), importances[indices], align='center')
             plt.xticks(range(len(indices)), [feature_names[i] for i in indices], rotation=45, ha='right')
             plt.tight_layout()
-            plt.show()
+            
+            filename = os.path.join(save_dir, f"feature_importance_{name}.png")
+            plt.savefig(filename)
+            print(f"Feature importance pentru {name} salvat in: {filename}")
+            plt.close()
